@@ -1,0 +1,55 @@
+on:
+  push:
+    branches:
+      - main
+name: 🚀 Deploy website on push (Main)
+jobs:
+  deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        with:
+          server: mi3-ts9.a2hosting.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: agency-analytics/
+          exclude: .git*
+            - .git*/**
+            -  **/.git*/**
+  post-deploy:
+    name: 🎉 Post-Deploy
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Run migrations and seeders, clear cache for views, config and routes
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd agency-analytics/
+            php artisan migrate:fresh --seed --force
+            php artisan config:clear
+            php artisan view:clear
+            php artisan route:cache
+          host: mi3-ts9.a2hosting.com
+          port: 7822
+          user: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
