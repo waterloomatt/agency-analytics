@@ -24,14 +24,14 @@
                             <div class="grid grid-cols-3 gap-6">
                                 <div class="col-span-3 sm:col-span-2">
                                     <label for="url"
-                                           class="block text-sm font-medium leading-6 text-gray-900">Website</label>
+                                           class="block text-sm font-medium leading-6 text-gray-900">URL (including protocol)</label>
                                     <div class="mt-2 flex rounded-md shadow-sm">
-                                        <span class="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 px-3 text-gray-500 sm:text-sm">https://</span>
                                         <input type="text"
                                                name="url"
                                                id="url"
-                                               class="block w-full flex-1 rounded-none rounded-r-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                               placeholder="www.example.com">
+                                               value="{{ old('url') }}"
+                                               class="block w-full flex-1 rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                               placeholder="https://www.example.com">
                                     </div>
 
                                     @error('url')
@@ -51,7 +51,7 @@
                                 </label>
                                 <div class="mt-2">
                                     <input type="number"
-                                           value="5"
+                                           value="{{ old('pages', 5) }}"
                                            min="1"
                                            max="10"
                                            name="pages"
@@ -79,7 +79,7 @@
             <div class="mt-5 md:col-span-8 md:mt-0">
                 <div class="shadow-md sm:overflow-hidden sm:rounded-md">
                     <h2 class="ml-3 my-3 text-lg font-bold leading-4 text-gray-900 sm:truncate sm:text-xl sm:tracking-tight">
-                        Crawl History (last 5 runs)
+                        History (Last 5 runs)
                     </h2>
 
                     <table class="min-w-full leading-normal">
@@ -160,6 +160,7 @@
                                     </span>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
+                                    @if ($crawl->details->count() > 0)
                                     @include('partials.crawl_details_modal', ['crawl' => $crawl, 'modal_id' => 'modal_'.$crawl->id])
                                     <button type="button"
                                             class="inline-block text-gray-500 hover:text-gray-700"
@@ -169,6 +170,7 @@
                                             <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z"/>
                                         </svg>
                                     </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
