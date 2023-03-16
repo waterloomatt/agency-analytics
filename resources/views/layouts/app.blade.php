@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container mx-auto">
     @yield('content')
 </div>
 </body>
