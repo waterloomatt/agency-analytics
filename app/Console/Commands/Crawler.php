@@ -6,19 +6,22 @@ use App\Enums\CrawlStatus;
 use App\Models\Crawl;
 use App\Models\CrawlDetail;
 use App\Pipelines\Crawler\CrawlResult;
+use App\Pipelines\Crawler\Pipes\ExternalLinks;
+use App\Pipelines\Crawler\Pipes\Images;
 use App\Pipelines\Crawler\Pipes\InternalLinks;
+use App\Pipelines\Crawler\Pipes\NavigableLinks;
 use App\Pipelines\Crawler\Pipes\Title;
+use App\Pipelines\Crawler\Pipes\Words;
 use DiDom\Document;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\TransferStats;
 use Illuminate\Console\Command;
 use Illuminate\Pipeline\Pipeline;
-use Illuminate\Support\Facades\DB;
 
 class Crawler extends Command
 {
-    public const MAX_VISITS = 6;
+    public const MAX_VISITS = 5;
 
     public const DOMAIN_PREFIX = 'https://agencyanalytics.com';
     protected $signature = 'app:crawl {url=https://agencyanalytics.com/}';
@@ -26,16 +29,13 @@ class Crawler extends Command
     protected $description = 'Crawls a given site and stores the results.';
 
     protected array $visited = [];
+
     protected array $toVisit = [];
 
     protected Crawl $crawl;
 
     public function handle(): void
     {
-        // @todo remove these
-        DB::table('crawl_details')->delete();
-        DB::table('crawls')->delete();
-
         $url = $this->argument('url');
 
         $this->info("Starting to crawl: {$url}");
@@ -75,29 +75,38 @@ class Crawler extends Command
             ->through([
                 Title::class,
                 InternalLinks::class,
+                ExternalLinks::class,
+                NavigableLinks::class,
+                Images::class,
+                Words::class,
             ])
             ->then(function (CrawlResult $result) {
-                CrawlDetail::create([
-                    'crawl_id' => $this->crawl->id,
-                    'http_status' => $result->httpCode,
-                    'url' => $result->url,
-                    'page_load' => $result->time,
-                    'unique_images' => 0,
-                    'unique_internal_links' => count($result->internalLinks),
-                    'unique_external_links' => 0,
-                    'word_count' => 0,
-                    'title_length' => strlen($result->title),
-                ]);
+                $this->storeDetail($result);
 
-                foreach ($result->internalLinks as $link) {
-                    $this->toVisit[] = $link;
+                foreach ($result->navigableLinks as $nextUrl) {
+                    $this->toVisit[] = $nextUrl;
 
-                    if (!in_array($link, $this->visited) && count($this->visited) < self::MAX_VISITS) {
-                        $this->info("Crawling... {$link}");
-                        $this->crawl($link);
+                    if (!in_array($nextUrl, $this->visited) && count($this->visited) < self::MAX_VISITS) {
+                        $this->info("Crawling... {$nextUrl}");
+                        $this->crawl($nextUrl);
                     }
                 }
             });
+    }
+
+    protected function storeDetail(CrawlResult $result)
+    {
+        CrawlDetail::create([
+            'crawl_id' => $this->crawl->id,
+            'http_status' => $result->httpCode,
+            'url' => $result->url,
+            'page_load' => $result->time,
+            'unique_images' => $result->imageCount,
+            'unique_internal_links' => $result->internalLinkCount,
+            'unique_external_links' => $result->externalLinkCount,
+            'word_count' => $result->wordCount,
+            'title_length' => strlen($result->title),
+        ]);
     }
 
     protected function summarize()
@@ -106,9 +115,13 @@ class Crawler extends Command
 
         $this->crawl->update([
             'status' => CrawlStatus::COMPLETED,
+            'pages' => $details->count(),
+            'unique_images' => $details->sum('unique_images'),
+            'unique_internal_links' => $details->sum('unique_internal_links'),
+            'unique_external_links' => $details->sum('unique_external_links'),
             'avg_page_load' => $details->avg('page_load'),
-            'avg_word_count' => $details->avg('word_count'),
-            'avg_title_length' => $details->avg('title_length'),
+            'avg_word_count' => round($details->avg('word_count')),
+            'avg_title_length' => round($details->avg('title_length')),
         ]);
     }
 }

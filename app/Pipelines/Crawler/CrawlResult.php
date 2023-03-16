@@ -2,7 +2,6 @@
 
 namespace App\Pipelines\Crawler;
 
-use App\DTO\Link;
 use DiDom\Document;
 
 class CrawlResult
@@ -17,12 +16,13 @@ class CrawlResult
 
     public string $title;
 
-    public array $internalLinks = [];
+    public int $internalLinkCount = 0;
 
-    public function addInternalLink(string $link)
-    {
-        if (!in_array($link, $this->internalLinks)) {
-            $this->internalLinks[] = $link;
-        }
-    }
+    public int $externalLinkCount = 0;
+
+    public int $imageCount = 0;
+
+    public int $wordCount = 0;
+
+    public array $navigableLinks = [];
 }
