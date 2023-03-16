@@ -17,7 +17,3 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CrawlerController::class, 'index']);
 Route::post('/', [CrawlerController::class, 'crawl']);
-
-Route::get('start-queue', function (Schedule $schedule) {
-    $schedule->command('queue:work --daemon')->everyMinute()->withoutOverlapping();
-});
