@@ -15,19 +15,18 @@ use App\Pipelines\Crawler\Pipes\Words;
 use DiDom\Document;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\TransferStats;
 use Illuminate\Console\Command;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Log;
 
 class Crawler extends Command
 {
-    public const MAX_VISITS = 5;
-
-    public const DOMAIN_PREFIX = 'https://agencyanalytics.com';
     protected $signature = 'app:crawl 
-        {crawl?}
-        {url=https://agencyanalytics.com/}
-        {pages=5}';
+        {--crawl=}
+        {--url=https://agencyanalytics.com/}
+        {--pages=5}';
 
     protected $description = 'Crawls a given site and stores the results.';
 
@@ -40,11 +39,11 @@ class Crawler extends Command
     public function handle(): void
     {
         $this->crawl = Crawl::firstOrCreate(
-            ['id' => $this->argument('crawl')],
+            ['id' => $this->option('crawl')],
             [
                 'status' => CrawlStatus::RUNNING,
-                'url' => $this->argument('url'),
-                'pages' => $this->argument('pages'),
+                'url' => $this->option('url'),
+                'pages' => $this->option('pages'),
             ]
         );
 
@@ -52,10 +51,13 @@ class Crawler extends Command
 
         try {
             $this->crawl($this->crawl->url);
-
-            $this->summarize();
+            $this->summarize(CrawlStatus::COMPLETED);
+        } catch (ClientException $e) {
+            $this->summarize(CrawlStatus::ERROR);
+            Log::error('Error while retrieving URL: ' . $e->getMessage());
         } catch (Exception $e) {
-            $this->crawl->update(['status' => CrawlStatus::ERROR]);
+            $this->summarize(CrawlStatus::ERROR);
+            Log::error('Error while retrieving URL: ' . $e->getMessage());
             $this->error($e->getMessage());
         }
     }
@@ -68,9 +70,13 @@ class Crawler extends Command
 
         $client = new Client();
         $res = $client->request('GET', $url, [
+            'http_errors' => false,
             'on_stats' => function (TransferStats $stats) use ($result) {
                 $result->time = $stats->getTransferTime();
-                $result->httpCode = $stats->getResponse()->getStatusCode();
+
+                if ($stats->getResponse()) {
+                    $result->httpCode = $stats->getResponse()->getStatusCode();
+                }
             }
         ]);
 
@@ -94,7 +100,7 @@ class Crawler extends Command
                 foreach ($result->navigableLinks as $nextUrl) {
                     $this->toVisit[] = $nextUrl;
 
-                    if (!in_array($nextUrl, $this->visited) && count($this->visited) < self::MAX_VISITS) {
+                    if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
                         $this->info("Crawling... {$nextUrl}");
                         $this->crawl($nextUrl);
                     }
@@ -117,19 +123,26 @@ class Crawler extends Command
         ]);
     }
 
-    protected function summarize()
+    protected function summarize(CrawlStatus $status)
     {
         $details = $this->crawl->details;
 
-        $this->crawl->update([
-            'status' => CrawlStatus::COMPLETED,
+        $summaryData = collect([
+            'status' => $status,
             'pages' => $details->count(),
-            'unique_images' => $details->sum('unique_images'),
-            'unique_internal_links' => $details->sum('unique_internal_links'),
-            'unique_external_links' => $details->sum('unique_external_links'),
-            'avg_page_load' => $details->avg('page_load'),
-            'avg_word_count' => round($details->avg('word_count')),
-            'avg_title_length' => round($details->avg('title_length')),
         ]);
+
+        if ($details->count() > 0) {
+            $summaryData = $summaryData->merge([
+                'unique_images' => $details->sum('unique_images'),
+                'unique_internal_links' => $details->sum('unique_internal_links'),
+                'unique_external_links' => $details->sum('unique_external_links'),
+                'avg_page_load' => $details->avg('page_load'),
+                'avg_word_count' => round($details->avg('word_count')),
+                'avg_title_length' => round($details->avg('title_length')),
+            ]);
+        }
+
+        $this->crawl->update($summaryData->toArray());
     }
 }
