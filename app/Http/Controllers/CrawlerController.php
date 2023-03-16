@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\CrawlStatus;
 use App\Http\Requests\CrawlRequest;
-use App\Jobs\CrawlSite;
 use App\Models\Crawl;
 use Illuminate\Support\Facades\Artisan;
 
@@ -32,8 +31,8 @@ class CrawlerController extends Controller
             'pages' => $validated['pages']
         ]);
 
-        Artisan::call('app:crawl', ['crawl' => $crawl->id]);
+        Artisan::call('app:crawl', ['--crawl' => $crawl->id]);
 
-        return redirect('/')->with('status', "Crawl started for {$validated['url']}");
+        return redirect('/')->withInput();
     }
 }
