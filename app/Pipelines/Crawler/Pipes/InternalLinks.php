@@ -2,25 +2,23 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Console\Commands\Crawler;
 use App\Pipelines\Crawler\CrawlResult;
 use Closure;
 use Illuminate\Support\Str;
 
 class InternalLinks
 {
-    public const CSS_SELECTOR = 'a[href*=agencyanalytics.com], a[href^=/], a[href^=#]';
-
     public function handle(CrawlResult $result, Closure $next)
     {
-        $internalLinks = $result->document->find(self::CSS_SELECTOR);
+        $selector = sprintf('a[href*=%s], a[href^=/], a[href^=#]', $result->getHost());
+        $internalLinks = $result->document->find($selector);
 
         $linkCount = collect($internalLinks)
-            ->map(function ($element) {
+            ->map(function ($element) use ($result) {
                 $href = $element->attr('href');
 
                 if (Str::startsWith($href, '/')) {
-                    $href = Crawler::DOMAIN_PREFIX . $href;
+                    $href = $result->buildUrlHost() . $href;
                 }
 
                 return $href;

@@ -2,26 +2,21 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Console\Commands\Crawler;
 use App\Pipelines\Crawler\CrawlResult;
 use Closure;
-use Illuminate\Support\Str;
 
 class ExternalLinks
 {
     public function handle(CrawlResult $result, Closure $next)
     {
         $allLinks = collect($result->document->find('a'));
-        $internalLinks = $result->document->find(InternalLinks::CSS_SELECTOR);
+        $selector = sprintf('a[href*=%s], a[href^=/], a[href^=#]', $result->getHost());
+        $internalLinks = $result->document->find($selector);
         $externalLinks = $allLinks->diff($internalLinks);
 
         $linkCount = collect($externalLinks)
             ->map(function ($element) {
                 $href = $element->attr('href');
-
-                if (Str::startsWith($href, '/')) {
-                    $href = Crawler::DOMAIN_PREFIX . $href;
-                }
 
                 return $href;
             })

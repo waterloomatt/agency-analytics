@@ -9,18 +9,17 @@ use Illuminate\Support\Str;
 
 class NavigableLinks
 {
-    public const CSS_SELECTOR = 'a[href*=agencyanalytics.com], a[href^=/]';
-
     public function handle(CrawlResult $result, Closure $next)
     {
-        $internalLinks = $result->document->find(self::CSS_SELECTOR);
+        $selector = sprintf('a[href*=%s], a[href^=/]', $result->getHost());
+        $internalLinks = $result->document->find($selector);
 
         $links = collect($internalLinks)
-            ->map(function ($element) {
+            ->map(function ($element) use ($result) {
                 $href = $element->attr('href');
 
                 if (Str::startsWith($href, '/')) {
-                    $href = Crawler::DOMAIN_PREFIX . $href;
+                    $href = $result->buildUrlHost() . $href;
                 }
 
                 return $href;
