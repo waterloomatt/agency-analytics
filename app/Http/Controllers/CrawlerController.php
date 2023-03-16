@@ -6,6 +6,7 @@ use App\Enums\CrawlStatus;
 use App\Http\Requests\CrawlRequest;
 use App\Jobs\CrawlSite;
 use App\Models\Crawl;
+use Illuminate\Support\Facades\Artisan;
 
 class CrawlerController extends Controller
 {
@@ -13,6 +14,7 @@ class CrawlerController extends Controller
     {
         $crawls = Crawl::with('details')
             ->latest()
+            ->limit(5)
             ->get();
 
         return view('crawler', [
@@ -30,7 +32,7 @@ class CrawlerController extends Controller
             'pages' => $validated['pages']
         ]);
 
-        CrawlSite::dispatch($crawl);
+        Artisan::call('app:crawl', ['crawl' => $crawl->id]);
 
         return redirect('/')->with('status', "Crawl started for {$validated['url']}");
     }

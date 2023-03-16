@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\CrawlerController;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Route;
 
 /*
