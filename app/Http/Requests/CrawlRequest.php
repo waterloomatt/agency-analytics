@@ -14,7 +14,8 @@ class CrawlRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'url' => ['required', 'url']
+            'url' => ['required', 'url'],
+            'pages' => ['required', 'integer', 'min:1', 'max:10'],
         ];
     }
 }
