@@ -24,7 +24,10 @@ class Crawler extends Command
     public const MAX_VISITS = 5;
 
     public const DOMAIN_PREFIX = 'https://agencyanalytics.com';
-    protected $signature = 'app:crawl {url=https://agencyanalytics.com/}';
+    protected $signature = 'app:crawl 
+        {crawl?}
+        {url=https://agencyanalytics.com/}
+        {pages=5}';
 
     protected $description = 'Crawls a given site and stores the results.';
 
@@ -36,14 +39,19 @@ class Crawler extends Command
 
     public function handle(): void
     {
-        $url = $this->argument('url');
+        $this->crawl = Crawl::firstOrCreate(
+            ['id' => $this->argument('crawl')],
+            [
+                'status' => CrawlStatus::RUNNING,
+                'url' => $this->argument('url'),
+                'pages' => $this->argument('pages'),
+            ]
+        );
 
-        $this->info("Starting to crawl: {$url}");
-
-        $this->crawl = Crawl::create(['status' => CrawlStatus::RUNNING]);
+        $this->info("Starting to crawl: {$this->crawl->url}");
 
         try {
-            $this->crawl($url);
+            $this->crawl($this->crawl->url);
 
             $this->summarize();
         } catch (Exception $e) {

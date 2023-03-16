@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Models\Crawl;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -14,14 +14,12 @@ class CrawlSite implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public string $url)
+    public function __construct(public Crawl $crawl)
     {
     }
 
     public function handle(): void
     {
-        Artisan::call('app:crawl', [
-            'url' => $this->url,
-        ]);
+        Artisan::call('app:crawl', ['crawl' => $this->crawl->id]);
     }
 }
