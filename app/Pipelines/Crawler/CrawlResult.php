@@ -8,7 +8,11 @@ use DiDom\Document;
 class CrawlResult
 {
     public Document $document;
+
     public int $httpCode;
+
+    public string $url;
+
     public float $time;
 
     public string $title;
