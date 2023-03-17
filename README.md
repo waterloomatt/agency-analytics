@@ -2,4 +2,5 @@
 
 ## AgencyAnalytics Web Crawler
 
-Built using Laravel 10 and PHP 8.1
+### Notes
+- built using Laravel 10 and PHP 8.1
