@@ -11,7 +11,7 @@ class Title
     {
         $title = $crawlDetail->document->first('head title') ?? '';
 
-        $crawlDetail->title_length = strlen($title);
+        $crawlDetail->title_length = strlen($title->text());
 
         return $next($crawlDetail);
     }

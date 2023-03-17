@@ -11,7 +11,7 @@ class Words
 {
     public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
-        $elements = $crawlDetail->document->find('//p | //span | //div//text()/..', Query::TYPE_XPATH);
+        $elements = $crawlDetail->document->find('//p | //span | //div | //title//text()/..', Query::TYPE_XPATH);
 
         $fullText = collect($elements)
             ->map(function ($element) {
