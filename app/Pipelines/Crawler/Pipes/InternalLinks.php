@@ -2,32 +2,38 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Pipelines\Crawler\CrawlResult;
+use App\Models\CrawlDetail;
 use Closure;
 use Illuminate\Support\Str;
 
 class InternalLinks
 {
-    public function handle(CrawlResult $result, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
-        $selector = sprintf('a[href*=%s], a[href^=/], a[href^=#]', $result->getHost());
-        $internalLinks = $result->document->find($selector);
+        $parts = parse_url($crawlDetail->url);
+        $internalSelectors = sprintf('a[href*=%s], a[href^=/], a[href^=./], a[href^=../], a[href^=#]', $parts['host']);
+        $internalLinks = $crawlDetail->document->find($internalSelectors);
 
-        $linkCount = collect($internalLinks)
-            ->map(function ($element) use ($result) {
+        $links = collect($internalLinks)
+            ->map(function ($element) use ($crawlDetail) {
                 $href = $element->attr('href');
 
-                if (Str::startsWith($href, '/')) {
-                    $href = $result->buildUrlHost() . $href;
+                if (Str::startsWith($href, ['/', '#'])) {
+                    $parts = parse_url($crawlDetail->url);
+                    $domain = $parts['scheme'] . '://' . $parts['host'];
+
+                    $href = $domain . $href;
                 }
 
                 return $href;
             })
+            ->filter(fn($href) => trim($href) !== '')
             ->unique()
-            ->count();
+            ->toArray();
 
-        $result->internalLinkCount = $linkCount;
+        $crawlDetail->internalLinks = $links;
+        $crawlDetail->unique_internal_links = count($links);
 
-        return $next($result);
+        return $next($crawlDetail);
     }
 }

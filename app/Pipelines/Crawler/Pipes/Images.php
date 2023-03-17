@@ -2,16 +2,14 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Pipelines\Crawler\CrawlResult;
+use App\Models\CrawlDetail;
 use Closure;
 
 class Images
 {
-    public const CSS_SELECTOR = 'img';
-
-    public function handle(CrawlResult $result, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
-        $elements = $result->document->find(self::CSS_SELECTOR);
+        $elements = $crawlDetail->document->find('img');
 
         $uniqueImageCount = collect($elements)
             ->map(function ($element) {
@@ -20,8 +18,8 @@ class Images
             ->unique()
             ->count();
 
-        $result->imageCount = $uniqueImageCount;
+        $crawlDetail->unique_images = $uniqueImageCount;
 
-        return $next($result);
+        return $next($crawlDetail);
     }
 }

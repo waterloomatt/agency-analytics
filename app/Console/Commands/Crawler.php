@@ -5,11 +5,9 @@ namespace App\Console\Commands;
 use App\Enums\CrawlStatus;
 use App\Models\Crawl;
 use App\Models\CrawlDetail;
-use App\Pipelines\Crawler\CrawlResult;
 use App\Pipelines\Crawler\Pipes\ExternalLinks;
 use App\Pipelines\Crawler\Pipes\Images;
 use App\Pipelines\Crawler\Pipes\InternalLinks;
-use App\Pipelines\Crawler\Pipes\NavigableLinks;
 use App\Pipelines\Crawler\Pipes\Title;
 use App\Pipelines\Crawler\Pipes\Words;
 use DiDom\Document;
@@ -38,92 +36,78 @@ class Crawler extends Command
 
     public function handle(): void
     {
-        $this->crawl = Crawl::firstOrCreate(
-            ['id' => $this->option('crawl')],
-            [
-                'status' => CrawlStatus::RUNNING,
-                'url' => $this->option('url'),
-                'pages' => $this->option('pages'),
-            ]
-        );
-
-        $this->info("Starting to crawl: {$this->crawl->url}");
-
         try {
+            $this->crawl = Crawl::firstOrCreate(
+                ['id' => $this->option('crawl')],
+                [
+                    'status' => CrawlStatus::RUNNING,
+                    'url' => $this->option('url'),
+                    'pages' => $this->option('pages'),
+                ]
+            );
+
+            $this->info("Starting to crawl: {$this->crawl->url}");
+
             $this->crawl($this->crawl->url);
+
             $this->summarize(CrawlStatus::COMPLETED);
         } catch (ClientException $e) {
             $this->summarize(CrawlStatus::ERROR);
-            Log::error('Error while retrieving URL: ' . $e->getMessage());
+            $this->logError($e->getMessage(), "Error while retrieving {$this->crawl->url}");
         } catch (Exception $e) {
             $this->summarize(CrawlStatus::ERROR);
-            Log::error('Error while retrieving URL: ' . $e->getMessage());
-            $this->error($e->getMessage());
+            $this->logError($e->getMessage(), "Error while crawling {$this->crawl->url}");
         }
     }
 
-    protected function crawl(string $url)
+    protected function crawl(string $url): void
     {
-        $result = new CrawlResult();
-
-        $result->url = $url;
+        $crawlDetail = new CrawlDetail([
+            'crawl_id' => $this->crawl->id,
+            'url' => $url,
+        ]);
 
         $client = new Client();
-        $res = $client->request('GET', $url, [
+        $response = $client->request('GET', $url, [
             'http_errors' => false,
-            'on_stats' => function (TransferStats $stats) use ($result) {
-                $result->time = $stats->getTransferTime();
+            'on_stats' => function (TransferStats $stats) use ($crawlDetail) {
+                $crawlDetail->page_load = $stats->getTransferTime();
 
-                if ($stats->getResponse()) {
-                    $result->httpCode = $stats->getResponse()->getStatusCode();
+                if ($stats->hasResponse()) {
+                    $crawlDetail->http_status = $stats->getResponse()->getStatusCode();
                 }
             }
         ]);
 
-        $result->document = new Document($res->getBody()->getContents());
-
-        $this->visited[] = $url;
+        $crawlDetail->document = new Document((string)$response->getBody());
 
         app(Pipeline::class)
-            ->send($result)
+            ->send($crawlDetail)
             ->through([
                 Title::class,
                 InternalLinks::class,
                 ExternalLinks::class,
-                NavigableLinks::class,
                 Images::class,
                 Words::class,
             ])
-            ->then(function (CrawlResult $result) {
-                $this->storeDetail($result);
+            ->then(function (CrawlDetail $crawlDetail) {
+                $this->visited[] = $crawlDetail->url;
 
-                foreach ($result->navigableLinks as $nextUrl) {
+//                dd($crawlDetail);
+                $crawlDetail->save();
+
+                foreach ($crawlDetail->internalLinks as $nextUrl) {
                     $this->toVisit[] = $nextUrl;
 
                     if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
-                        $this->info("Crawling... {$nextUrl}");
+                        $this->info("Crawling... $nextUrl");
                         $this->crawl($nextUrl);
                     }
                 }
             });
     }
 
-    protected function storeDetail(CrawlResult $result)
-    {
-        CrawlDetail::create([
-            'crawl_id' => $this->crawl->id,
-            'http_status' => $result->httpCode,
-            'url' => $result->url,
-            'page_load' => $result->time,
-            'unique_images' => $result->imageCount,
-            'unique_internal_links' => $result->internalLinkCount,
-            'unique_external_links' => $result->externalLinkCount,
-            'word_count' => $result->wordCount,
-            'title_length' => strlen($result->title),
-        ]);
-    }
-
-    protected function summarize(CrawlStatus $status)
+    protected function summarize(CrawlStatus $status): void
     {
         $details = $this->crawl->details;
 
@@ -144,5 +128,11 @@ class Crawler extends Command
         }
 
         $this->crawl->update($summaryData->toArray());
+    }
+
+    protected function logError(string $exceptionMessage, string $message): void
+    {
+        Log::error($message . ': ' . $exceptionMessage);
+        $this->error($message);
     }
 }

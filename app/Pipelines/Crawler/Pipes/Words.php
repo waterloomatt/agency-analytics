@@ -2,18 +2,16 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Pipelines\Crawler\CrawlResult;
+use App\Models\CrawlDetail;
 use Closure;
 use DiDom\Query;
 use Illuminate\Support\Str;
 
 class Words
 {
-    public const XPATH_SELECTOR = '//p | //span | //div//text()/..';
-
-    public function handle(CrawlResult $result, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
-        $elements = $result->document->find(self::XPATH_SELECTOR, Query::TYPE_XPATH);
+        $elements = $crawlDetail->document->find('//p | //span | //div//text()/..', Query::TYPE_XPATH);
 
         $fullText = collect($elements)
             ->map(function ($element) {
@@ -21,8 +19,8 @@ class Words
             })
             ->join(' ');
 
-        $result->wordCount = Str::wordCount($fullText);
+        $crawlDetail->word_count = Str::wordCount($fullText);
 
-        return $next($result);
+        return $next($crawlDetail);
     }
 }
