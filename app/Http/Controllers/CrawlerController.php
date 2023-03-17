@@ -17,8 +17,13 @@ class CrawlerController extends Controller
             ->recent()
             ->get();
 
+        $mostRecentCrawl = Crawl::with('details')
+            ->latest()
+            ->first();
+
         return view('crawler', [
             'crawls' => $recentCrawls,
+            'mostRecentCrawl' => $mostRecentCrawl,
         ]);
     }
 
