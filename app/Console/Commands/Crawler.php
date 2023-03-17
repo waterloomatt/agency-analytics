@@ -8,13 +8,11 @@ use App\Models\CrawlDetail;
 use App\Pipelines\Crawler\Pipes\ExternalLinks;
 use App\Pipelines\Crawler\Pipes\Images;
 use App\Pipelines\Crawler\Pipes\InternalLinks;
+use App\Pipelines\Crawler\Pipes\LoadDocument;
 use App\Pipelines\Crawler\Pipes\Title;
 use App\Pipelines\Crawler\Pipes\Words;
-use DiDom\Document;
 use Exception;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\TransferStats;
 use Illuminate\Console\Command;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\Log;
@@ -30,8 +28,6 @@ class Crawler extends Command
 
     protected array $visited = [];
 
-    protected array $toVisit = [];
-
     protected Crawl $crawl;
 
     public function handle(): void
@@ -46,17 +42,19 @@ class Crawler extends Command
                 ]
             );
 
-            $this->info("Starting to crawl: {$this->crawl->url}");
+            $this->info("Starting to crawl");
 
             $this->crawl($this->crawl->url);
 
             $this->summarize(CrawlStatus::COMPLETED);
+
+            $this->info("Finished crawling");
         } catch (ClientException $e) {
             $this->summarize(CrawlStatus::ERROR);
-            $this->logError($e->getMessage(), "Error while retrieving {$this->crawl->url}");
+            $this->logError("Error while retrieving {$this->crawl->url}", $e->getMessage());
         } catch (Exception $e) {
             $this->summarize(CrawlStatus::ERROR);
-            $this->logError($e->getMessage(), "Error while crawling {$this->crawl->url}");
+            $this->logError("Error while crawling {$this->crawl->url}", $e->getMessage());
         }
     }
 
@@ -67,23 +65,12 @@ class Crawler extends Command
             'url' => $url,
         ]);
 
-        $client = new Client();
-        $response = $client->request('GET', $url, [
-            'http_errors' => false,
-            'on_stats' => function (TransferStats $stats) use ($crawlDetail) {
-                $crawlDetail->page_load = $stats->getTransferTime();
-
-                if ($stats->hasResponse()) {
-                    $crawlDetail->http_status = $stats->getResponse()->getStatusCode();
-                }
-            }
-        ]);
-
-        $crawlDetail->document = new Document((string)$response->getBody());
+        $this->info("Crawling $crawlDetail->url");
 
         app(Pipeline::class)
             ->send($crawlDetail)
             ->through([
+                LoadDocument::class,
                 Title::class,
                 InternalLinks::class,
                 ExternalLinks::class,
@@ -93,14 +80,10 @@ class Crawler extends Command
             ->then(function (CrawlDetail $crawlDetail) {
                 $this->visited[] = $crawlDetail->url;
 
-//                dd($crawlDetail);
                 $crawlDetail->save();
 
                 foreach ($crawlDetail->internalLinks as $nextUrl) {
-                    $this->toVisit[] = $nextUrl;
-
                     if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
-                        $this->info("Crawling... $nextUrl");
                         $this->crawl($nextUrl);
                     }
                 }
@@ -130,7 +113,7 @@ class Crawler extends Command
         $this->crawl->update($summaryData->toArray());
     }
 
-    protected function logError(string $exceptionMessage, string $message): void
+    protected function logError(string $message, string $exceptionMessage): void
     {
         Log::error($message . ': ' . $exceptionMessage);
         $this->error($message);
