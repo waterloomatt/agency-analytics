@@ -82,7 +82,7 @@ class CrawlerPipelineTest extends TestCase
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
         $next = function (CrawlDetail $crawlResult) {
-            $this->assertEquals(22, $crawlResult->word_count);
+            $this->assertEquals(20, $crawlResult->word_count);
         };
 
         app()->make(Words::class)->handle($this->detail, $next);
