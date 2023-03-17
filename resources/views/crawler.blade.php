@@ -1,3 +1,4 @@
+@php use App\Enums\CrawlStatus; @endphp
 @extends('layouts.app')
 
 @section('title', 'Crawler')
@@ -20,11 +21,24 @@
                             Start Crawl
                         </h2>
 
-                        <div class="space-y-6 bg-white px-4 py-5 sm:p-6">
+                        @if ($errors->has('exception'))
+                            <div class="ml-3 font-bold">
+                                <ul>
+                                    @foreach ($errors->get('exception') as $error)
+                                        <li class="flex items-center font-medium tracking-wide text-red-500 text-xs">
+                                            {{ $error }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <div class="space-y-6 bg-white py-5 sm:p-3">
                             <div class="grid grid-cols-3 gap-6">
                                 <div class="col-span-3 sm:col-span-2">
                                     <label for="url"
-                                           class="block text-sm font-medium leading-6 text-gray-900">URL (including protocol)</label>
+                                           class="block text-sm font-medium leading-6 text-gray-900">URL (including
+                                        protocol)</label>
                                     <div class="mt-2 flex rounded-md shadow-sm">
                                         <input type="text"
                                                name="url"
@@ -152,8 +166,27 @@
                                     <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->avg_title_length }}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                                      <span class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                    <span @class([
+                                        'relative',
+                                        'inline-block',
+                                        'px-3',
+                                        'py-1',
+                                        'font-semibold',
+                                        'text-orange-900' => $crawl->status === CrawlStatus::RUNNING,
+                                        'text-green-900' => $crawl->status === CrawlStatus::COMPLETED,
+                                        'text-red-900' => $crawl->status === CrawlStatus::ERROR,
+                                        'leading-tight'
+                                    ])>
+                                        <span @class([
+                                            'absolute',
+                                            'inset-0',
+                                             'bg-orange-200' => $crawl->status === CrawlStatus::RUNNING,
+                                             'bg-green-200' => $crawl->status === CrawlStatus::COMPLETED,
+                                             'bg-red-200' => $crawl->status === CrawlStatus::ERROR,
+                                             'opacity-50',
+                                             'rounded-full'
+                                    ])></span>
+
                                       <span class="relative">
                                           {{ $crawl->status }}
                                       </span>
@@ -161,15 +194,15 @@
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
                                     @if ($crawl->details->count() > 0)
-                                    @include('partials.crawl_details_modal', ['crawl' => $crawl, 'modal_id' => 'modal_'.$crawl->id])
-                                    <button type="button"
-                                            class="inline-block text-gray-500 hover:text-gray-700"
-                                            onclick="toggleModal('modal_{{ $crawl->id }}')">
-                                        <svg class="inline-block h-6 w-6 fill-current"
-                                             viewBox="0 0 24 24">
-                                            <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z"/>
-                                        </svg>
-                                    </button>
+                                        @include('partials.crawl_details_modal', ['crawl' => $crawl, 'modal_id' => 'modal_'.$crawl->id])
+                                        <button type="button"
+                                                class="inline-block text-gray-500 hover:text-gray-700"
+                                                onclick="toggleModal('modal_{{ $crawl->id }}')">
+                                            <svg class="inline-block h-6 w-6 fill-current"
+                                                 viewBox="0 0 24 24">
+                                                <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z"/>
+                                            </svg>
+                                        </button>
                                     @endif
                                 </td>
                             </tr>
