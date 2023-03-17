@@ -9,10 +9,13 @@ use App\Pipelines\Crawler\Pipes\InternalLinks;
 use App\Pipelines\Crawler\Pipes\Title;
 use App\Pipelines\Crawler\Pipes\Words;
 use DiDom\Document;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 class CrawlerPipelineTest extends TestCase
 {
+    use DatabaseMigrations;
+
     protected CrawlDetail $detail;
 
     public function setUp(): void

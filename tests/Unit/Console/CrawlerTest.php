@@ -4,10 +4,13 @@ namespace Tests\Unit\Console;
 
 use App\Enums\CrawlStatus;
 use App\Models\Crawl;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 class CrawlerTest extends TestCase
 {
+    use DatabaseMigrations;
+
     /** @test */
     public function crawler_accepts_an_existing_crawl(): void
     {

@@ -37,7 +37,6 @@ jobs:
         with:
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
-          args: --coverage-text
 
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@master
