@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\CrawlStatus;
 use App\Models\Crawl;
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use App\Pipelines\Crawler\Pipes\ExternalLinks;
 use App\Pipelines\Crawler\Pipes\Images;
 use App\Pipelines\Crawler\Pipes\InternalLinks;
@@ -65,17 +65,17 @@ class Crawler extends Command
 
     protected function crawl(string $url): void
     {
-        $crawlDetail = new CrawlDetail([
+        $crawlPage = new CrawlPage([
             'crawl_id' => $this->crawl->id,
             'url' => $url,
         ]);
 
-        $this->loadDocument($crawlDetail);
+        $this->loadDocument($crawlPage);
 
-        $this->info("Crawling $crawlDetail->url");
+        $this->info("Crawling $crawlPage->url");
 
         app(Pipeline::class)
-            ->send($crawlDetail)
+            ->send($crawlPage)
             ->through([
                 Title::class,
                 InternalLinks::class,
@@ -83,12 +83,12 @@ class Crawler extends Command
                 Images::class,
                 Words::class,
             ])
-            ->then(function (CrawlDetail $crawlDetail) {
-                $this->visited[] = $crawlDetail->url;
+            ->then(function (CrawlPage $crawlPage) {
+                $this->visited[] = $crawlPage->url;
 
-                $crawlDetail->save();
+                $crawlPage->save();
 
-                foreach ($crawlDetail->internalLinks as $nextUrl) {
+                foreach ($crawlPage->internalLinks as $nextUrl) {
                     if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
                         $this->crawl($nextUrl);
                     }
@@ -96,20 +96,20 @@ class Crawler extends Command
             });
     }
 
-    protected function loadDocument(CrawlDetail $crawlDetail)
+    protected function loadDocument(CrawlPage $crawlPage)
     {
-        $response = $this->client->request('GET', $crawlDetail->url, [
+        $response = $this->client->request('GET', $crawlPage->url, [
             'http_errors' => false,
-            'on_stats' => function (TransferStats $stats) use ($crawlDetail) {
-                $crawlDetail->page_load = $stats->getTransferTime();
+            'on_stats' => function (TransferStats $stats) use ($crawlPage) {
+                $crawlPage->page_load = $stats->getTransferTime();
 
                 if ($stats->hasResponse()) {
-                    $crawlDetail->http_status = $stats->getResponse()->getStatusCode();
+                    $crawlPage->http_status = $stats->getResponse()->getStatusCode();
                 }
             }
         ]);
 
-        $crawlDetail->document = new Document((string)$response->getBody());
+        $crawlPage->document = new Document((string)$response->getBody());
     }
 
     protected function summarize(CrawlStatus $status): void

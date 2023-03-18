@@ -2,20 +2,20 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use Closure;
 
 class Title
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlPage $crawlPage, Closure $next)
     {
         $title = '';
-        if ($crawlDetail->document->has('head title')) {
-            $title = $crawlDetail->document->first('head title')->text();
+        if ($crawlPage->document->has('head title')) {
+            $title = $crawlPage->document->first('head title')->text();
         }
 
-        $crawlDetail->title_length = strlen($title);
+        $crawlPage->title_length = strlen($title);
 
-        return $next($crawlDetail);
+        return $next($crawlPage);
     }
 }

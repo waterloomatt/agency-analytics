@@ -2,14 +2,14 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use Closure;
 
 class Images
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlPage $crawlPage, Closure $next)
     {
-        $elements = $crawlDetail->document->find('img');
+        $elements = $crawlPage->document->find('img');
 
         $uniqueImageCount = collect($elements)
             ->map(function ($element) {
@@ -18,8 +18,8 @@ class Images
             ->unique()
             ->count();
 
-        $crawlDetail->unique_images = $uniqueImageCount;
+        $crawlPage->unique_images = $uniqueImageCount;
 
-        return $next($crawlDetail);
+        return $next($crawlPage);
     }
 }

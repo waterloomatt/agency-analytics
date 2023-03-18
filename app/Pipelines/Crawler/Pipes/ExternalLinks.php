@@ -2,18 +2,18 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use Closure;
 
 class ExternalLinks
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlPage $crawlPage, Closure $next)
     {
-        $allLinks = collect($crawlDetail->document->find('a'));
+        $allLinks = collect($crawlPage->document->find('a'));
 
-        $parts = parse_url($crawlDetail->url);
+        $parts = parse_url($crawlPage->url);
         $internalSelectors = sprintf('a[href*=%s], a[href^=/], a[href^=./], a[href^=../], a[href^=#]', $parts['host']);
-        $internalLinks = $crawlDetail->document->find($internalSelectors);
+        $internalLinks = $crawlPage->document->find($internalSelectors);
 
         $externalLinks = $allLinks->diff($internalLinks);
 
@@ -23,8 +23,8 @@ class ExternalLinks
             ->unique()
             ->toArray();
 
-        $crawlDetail->unique_external_links = count($links);
+        $crawlPage->unique_external_links = count($links);
 
-        return $next($crawlDetail);
+        return $next($crawlPage);
     }
 }

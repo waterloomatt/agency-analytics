@@ -2,24 +2,24 @@
 
 namespace App\Pipelines\Crawler\Pipes;
 
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use Closure;
 use Illuminate\Support\Str;
 
 class InternalLinks
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlPage $crawlPage, Closure $next)
     {
-        $parts = parse_url($crawlDetail->url);
+        $parts = parse_url($crawlPage->url);
         $internalSelectors = sprintf('a[href*=%s], a[href^=/], a[href^=./], a[href^=../], a[href^=#]', $parts['host']);
-        $internalLinks = $crawlDetail->document->find($internalSelectors);
+        $internalLinks = $crawlPage->document->find($internalSelectors);
 
         $links = collect($internalLinks)
-            ->map(function ($element) use ($crawlDetail) {
+            ->map(function ($element) use ($crawlPage) {
                 $href = $element->attr('href');
 
                 if (Str::startsWith($href, ['/', '#'])) {
-                    $parts = parse_url($crawlDetail->url);
+                    $parts = parse_url($crawlPage->url);
                     $domain = $parts['scheme'] . '://' . $parts['host'];
 
                     $href = $domain . $href;
@@ -31,9 +31,9 @@ class InternalLinks
             ->unique()
             ->toArray();
 
-        $crawlDetail->internalLinks = $links;
-        $crawlDetail->unique_internal_links = count($links);
+        $crawlPage->internalLinks = $links;
+        $crawlPage->unique_internal_links = count($links);
 
-        return $next($crawlDetail);
+        return $next($crawlPage);
     }
 }

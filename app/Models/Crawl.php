@@ -20,7 +20,7 @@ class Crawl extends Model
 
     public function details(): HasMany
     {
-        return $this->hasMany(CrawlDetail::class);
+        return $this->hasMany(CrawlPage::class);
     }
 
     public function scopeRecent(Builder $query): Builder

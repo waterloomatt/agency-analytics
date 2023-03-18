@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Pipelines\Crawler;
 
-use App\Models\CrawlDetail;
+use App\Models\CrawlPage;
 use App\Pipelines\Crawler\Pipes\ExternalLinks;
 use App\Pipelines\Crawler\Pipes\Images;
 use App\Pipelines\Crawler\Pipes\InternalLinks;
@@ -16,13 +16,13 @@ class CrawlerPipelineTest extends TestCase
 {
     use DatabaseMigrations;
 
-    protected CrawlDetail $detail;
+    protected CrawlPage $detail;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->detail = new CrawlDetail([
+        $this->detail = new CrawlPage([
             'crawl_id' => 1,
             'url' => 'https://test_domain.com'
         ]);
@@ -33,7 +33,7 @@ class CrawlerPipelineTest extends TestCase
     {
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
-        $next = function (CrawlDetail $crawlResult) {
+        $next = function (CrawlPage $crawlResult) {
             $this->assertEquals(10, $crawlResult->title_length);
         };
 
@@ -45,7 +45,7 @@ class CrawlerPipelineTest extends TestCase
     {
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
-        $next = function (CrawlDetail $crawlResult) {
+        $next = function (CrawlPage $crawlResult) {
             $this->assertEquals(3, $crawlResult->unique_internal_links);
         };
 
@@ -57,7 +57,7 @@ class CrawlerPipelineTest extends TestCase
     {
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
-        $next = function (CrawlDetail $crawlResult) {
+        $next = function (CrawlPage $crawlResult) {
             $this->assertEquals(1, $crawlResult->unique_external_links);
         };
 
@@ -69,7 +69,7 @@ class CrawlerPipelineTest extends TestCase
     {
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
-        $next = function (CrawlDetail $crawlResult) {
+        $next = function (CrawlPage $crawlResult) {
             $this->assertEquals(1, $crawlResult->unique_images);
         };
 
@@ -81,7 +81,7 @@ class CrawlerPipelineTest extends TestCase
     {
         $this->detail->document = new Document(file_get_contents('tests/Fixtures/simple_valid_response.html'));
 
-        $next = function (CrawlDetail $crawlResult) {
+        $next = function (CrawlPage $crawlResult) {
             $this->assertEquals(20, $crawlResult->word_count);
         };
 
