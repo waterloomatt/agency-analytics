@@ -12,22 +12,6 @@ class CrawlerTest extends TestCase
     use DatabaseMigrations;
 
     /** @test */
-    public function crawler_accepts_an_existing_crawl(): void
-    {
-        $crawl = Crawl::create([
-            'status' => CrawlStatus::RUNNING,
-            'url' => 'https://agencyanalytics.com',
-            'pages' => 1,
-        ]);
-
-        $this
-            ->artisan('app:crawl', ['--crawl' => $crawl->id])
-            ->expectsOutput('Starting to crawl')
-            ->expectsOutput('Crawling ' . $crawl->url)
-            ->expectsOutput('Finished crawling');
-    }
-
-    /** @test */
     public function crawler_accepts_a_url_and_pages(): void
     {
         $url = 'https://agencyanalytics.com';

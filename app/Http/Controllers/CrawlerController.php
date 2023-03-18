@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CrawlStatus;
 use App\Http\Requests\CrawlRequest;
 use App\Models\Crawl;
 use Exception;
@@ -13,9 +12,13 @@ class CrawlerController extends Controller
 {
     public function index()
     {
-        $recentCrawls = Crawl::with('details')
-            ->recent()
-            ->get();
+        try {
+            $recentCrawls = Crawl::with('details')
+                ->recent()
+                ->get();
+        } catch (Exception $e) {
+            Log::error(sprintf('Error while loading crawl data: %s', $e->getMessage()));
+        }
 
         return view('crawler', [
             'crawls' => $recentCrawls,
@@ -28,13 +31,10 @@ class CrawlerController extends Controller
         $validated = $request->validated();
 
         try {
-            $crawl = Crawl::create([
-                'status' => CrawlStatus::RUNNING,
-                'url' => $validated['url'],
-                'pages' => $validated['pages']
+            Artisan::call('app:crawl', [
+                '--url' => $validated['url'],
+                '--pages' => $validated['pages']
             ]);
-
-            Artisan::call('app:crawl', ['--crawl' => $crawl->id]);
         } catch (Exception $e) {
             Log::error(sprintf('Error while submitting crawl to %s: %s', $validated['url'], $e->getMessage()));
 

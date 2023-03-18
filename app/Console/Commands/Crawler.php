@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Log;
 class Crawler extends Command
 {
     protected $signature = 'app:crawl 
-        {--crawl=}
         {--url=https://agencyanalytics.com}
         {--pages=5}';
 
@@ -38,14 +37,11 @@ class Crawler extends Command
     {
         try {
             $this->client = $client;
-            $this->crawl = Crawl::firstOrCreate(
-                ['id' => $this->option('crawl')],
-                [
-                    'status' => CrawlStatus::RUNNING,
-                    'url' => $this->option('url'),
-                    'pages' => $this->option('pages'),
-                ]
-            );
+            $this->crawl = Crawl::create([
+                'status' => CrawlStatus::RUNNING,
+                'url' => $this->option('url'),
+                'pages' => $this->option('pages'),
+            ]);
 
             $this->info("Starting to crawl");
 
