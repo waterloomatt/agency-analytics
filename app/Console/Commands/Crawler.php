@@ -90,7 +90,6 @@ class Crawler extends Command
 
                 foreach ($crawlPage->internalLinks as $nextUrl) {
                     if ($this->validateNextUrl($nextUrl)) {
-                        Log::info('Parsing ' . $crawlPage->url);
                         $this->crawl($nextUrl);
                     }
                 }
@@ -103,6 +102,11 @@ class Crawler extends Command
             return false;
         }
 
+        $parts = parse_url($nextUrl);
+        if (!array_key_exists('host', $parts)) {
+            return false;
+        }
+
         if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
             return true;
         }
@@ -112,7 +116,6 @@ class Crawler extends Command
 
     protected function loadDocument(CrawlPage $crawlPage)
     {
-        Log::info('About to ping ' . $crawlPage->url);
         $response = $this->client->request('GET', $crawlPage->url, [
             'http_errors' => false,
             'on_stats' => function (TransferStats $stats) use ($crawlPage) {
