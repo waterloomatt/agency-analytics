@@ -7,7 +7,7 @@ use Closure;
 
 class Title
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
     {
         $title = '';
         if ($crawlDetail->document->has('head title')) {

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class Words
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
     {
         $elements = $crawlDetail->document->find('//p | //span | //div//text()/..', Query::TYPE_XPATH);
 
