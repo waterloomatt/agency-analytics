@@ -89,15 +89,30 @@ class Crawler extends Command
                 $crawlPage->save();
 
                 foreach ($crawlPage->internalLinks as $nextUrl) {
-                    if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
+                    if ($this->validateNextUrl($nextUrl)) {
+                        Log::info('Parsing ' . $crawlPage->url);
                         $this->crawl($nextUrl);
                     }
                 }
             });
     }
 
+    protected function validateNextUrl(string $nextUrl): bool
+    {
+        if (!filter_var($nextUrl, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function loadDocument(CrawlPage $crawlPage)
     {
+        Log::info('About to ping ' . $crawlPage->url);
         $response = $this->client->request('GET', $crawlPage->url, [
             'http_errors' => false,
             'on_stats' => function (TransferStats $stats) use ($crawlPage) {
