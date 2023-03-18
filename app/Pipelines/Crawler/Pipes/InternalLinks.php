@@ -19,7 +19,7 @@ class InternalLinks
                 $href = $element->attr('href');
 
                 if (Str::startsWith($href, ['/', '#'])) {
-                    $parts = parse_url($crawlPage->url);
+                    $parts = parse_url($crawlPage->crawl->url);
                     $domain = $parts['scheme'] . '://' . $parts['host'];
 
                     $href = $domain . $href;
