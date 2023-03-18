@@ -114,6 +114,7 @@ class Crawler extends Command
     {
         $response = $this->client->request('GET', $crawlPage->url, [
             'http_errors' => false,
+            'timeout' => 5,
             'on_stats' => function (TransferStats $stats) use ($crawlPage) {
                 $crawlPage->page_load = $stats->getTransferTime();
 
