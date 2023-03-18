@@ -7,7 +7,7 @@
     <div class="px-4">
         <div class="pb-3 mb-6">
             <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mt-6">
-                AgencyAnalytics - Web Crawler
+                <span class="hidden sm:inline">AgencyAnalytics - </span>Web Crawler
             </h1>
         </div>
 
