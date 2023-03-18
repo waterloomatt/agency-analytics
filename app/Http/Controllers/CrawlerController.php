@@ -17,13 +17,9 @@ class CrawlerController extends Controller
             ->recent()
             ->get();
 
-        $mostRecentCrawl = Crawl::with('details')
-            ->latest()
-            ->first();
-
         return view('crawler', [
             'crawls' => $recentCrawls,
-            'mostRecentCrawl' => $mostRecentCrawl,
+            'mostRecentCrawl' => $recentCrawls->first(),
         ]);
     }
 
@@ -40,10 +36,7 @@ class CrawlerController extends Controller
 
             Artisan::call('app:crawl', ['--crawl' => $crawl->id]);
         } catch (Exception $e) {
-            Log::error(vsprintf('Error while submitting crawl to %s: %s', [
-                $validated['url'],
-                $e->getMessage(),
-            ]));
+            Log::error(sprintf('Error while submitting crawl to %s: %s', $validated['url'], $e->getMessage()));
 
             return redirect('/')
                 ->withErrors(['exception' => 'We\'re unable to crawl the site at this time. Please try again later.'])
