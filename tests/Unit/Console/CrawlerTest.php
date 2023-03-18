@@ -2,8 +2,6 @@
 
 namespace Tests\Unit\Console;
 
-use App\Enums\CrawlStatus;
-use App\Models\Crawl;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 

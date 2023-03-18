@@ -24,7 +24,7 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install dependencies
-        run: composer install --optimize-autoloader --no-dev --no-progress
+        run: composer install --optimize-autoloader --no-progress
 
       - name: npm install
         run: npm install
