@@ -7,7 +7,7 @@ use Closure;
 
 class ExternalLinks
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next)
+    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
     {
         $allLinks = collect($crawlDetail->document->find('a'));
 
