@@ -51,8 +51,8 @@
 
                                 @error('url')
                                 <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-{{ $message }}
-</span>
+                                        {{ $message }}
+                                    </span>
                                 @enderror
                             </div>
 
@@ -73,8 +73,8 @@
 
                                 @error('pages')
                                 <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-{{ $message }}
-</span>
+                                        {{ $message }}
+                                    </span>
                                 @enderror
 
                             </div>
@@ -94,7 +94,7 @@
                         History (Last 5 runs)
                     </h2>
 
-                    <table class="min-w-max leading-normal">
+                    <table class="table-auto">
                         <thead>
                         <tr>
                             <th
@@ -173,37 +173,34 @@
                                     <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->avg_title_length }}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-<span @class([
-'relative',
-'inline-block',
-'px-3',
-'py-1',
-'font-semibold',
-'text-orange-900' => $crawl->status === CrawlStatus::RUNNING,
-'text-green-900' => $crawl->status === CrawlStatus::COMPLETED,
-'text-red-900' => $crawl->status === CrawlStatus::ERROR,
-'leading-tight',
-])>
-<span @class([
-'absolute',
-'inset-0',
-'bg-orange-200' => $crawl->status === CrawlStatus::RUNNING,
-'bg-green-200' => $crawl->status === CrawlStatus::COMPLETED,
-'bg-red-200' => $crawl->status === CrawlStatus::ERROR,
-'opacity-50',
-'rounded-full',
-])></span>
-
-<span class="relative">
-{{ $crawl->status }}
-</span>
-</span>
+                                        <span @class([
+                                            'relative',
+                                            'inline-block',
+                                            'px-3',
+                                            'py-1',
+                                            'font-semibold',
+                                            'text-orange-900' => $crawl->status === CrawlStatus::RUNNING,
+                                            'text-green-900' => $crawl->status === CrawlStatus::COMPLETED,
+                                            'text-red-900' => $crawl->status === CrawlStatus::ERROR,
+                                            'leading-tight',
+                                        ])>
+                                            <span @class([
+                                                'absolute',
+                                                'inset-0',
+                                                'bg-orange-200' => $crawl->status === CrawlStatus::RUNNING,
+                                                'bg-green-200' => $crawl->status === CrawlStatus::COMPLETED,
+                                                'bg-red-200' => $crawl->status === CrawlStatus::ERROR,
+                                                'opacity-50',
+                                                'rounded-full',
+                                            ])></span>
+                                            <span class="relative">{{ $crawl->status }}</span>
+                                        </span>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
                                     @if ($crawl->details->count() > 0)
                                         @include('partials.crawl_details_modal', [
-                                        'crawl' => $crawl,
-                                        'modal_id' => 'modal_' . $crawl->id,
+                                            'crawl' => $crawl,
+                                            'modal_id' => 'modal_' . $crawl->id,
                                         ])
                                         <button type="button"
                                                 class="inline-block text-gray-500 hover:text-gray-700"
@@ -228,36 +225,40 @@
                         History (latest run)
                     </h2>
 
-                    <dl>
-                        <div class="bg-gray-50 px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Pages</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->pages }}</dd>
-                        </div>
-                        <div class="bg-white px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Images</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_images }}</dd>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Internal Links</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_internal_links }}</dd>
-                        </div>
-                        <div class="bg-white px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">External Links</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_external_links }}</dd>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Page Load</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_page_load }}</dd>
-                        </div>
-                        <div class="bg-white px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Word Count</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_word_count }}</dd>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-5">
-                            <dt class="text-sm font-medium text-gray-500">Title Length</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_title_length }}</dd>
-                        </div>
-                    </dl>
+                    @if ($mostRecentCrawl)
+                        <dl>
+                            <div class="bg-gray-50 px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Pages</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->pages }}</dd>
+                            </div>
+                            <div class="bg-white px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Images</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_images }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Internal Links</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_internal_links }}</dd>
+                            </div>
+                            <div class="bg-white px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">External Links</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->unique_external_links }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Page Load</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_page_load }}</dd>
+                            </div>
+                            <div class="bg-white px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Word Count</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_word_count }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-5">
+                                <dt class="text-sm font-medium text-gray-500">Title Length</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->avg_title_length }}</dd>
+                            </div>
+                        </dl>
+                    @else
+                        No data
+                    @endif
                 </div>
             </div>
             <div class="block sm:hidden mt-5 md:mt-0">
@@ -266,14 +267,18 @@
                         Pages (latest run)
                     </h2>
 
-                    <dl>
-                        @foreach ($mostRecentCrawl->details as $crawlPage)
-                            <div class="bg-gray-50 px-4 py-5">
-                                <dt class="text-sm font-medium text-gray-500">{{ $crawlPage->url }}</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $crawlPage->http_status }}</dd>
-                            </div>
-                        @endforeach
-                    </dl>
+                    @if ($mostRecentCrawl)
+                        <dl>
+                            @foreach ($mostRecentCrawl->details as $crawlPage)
+                                <div class="bg-gray-50 px-4 py-5">
+                                    <dt class="text-sm font-medium text-gray-500">{{ $crawlPage->url }}</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $crawlPage->http_status }}</dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    @else
+                        No data
+                    @endif
                 </div>
             </div>
         </div>
