@@ -7,7 +7,7 @@ use Closure;
 
 class Images
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
         $elements = $crawlDetail->document->find('img');
 

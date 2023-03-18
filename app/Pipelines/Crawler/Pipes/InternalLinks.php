@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class InternalLinks
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
         $parts = parse_url($crawlDetail->url);
         $internalSelectors = sprintf('a[href*=%s], a[href^=/], a[href^=./], a[href^=../], a[href^=#]', $parts['host']);

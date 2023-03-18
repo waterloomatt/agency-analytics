@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class Words
 {
-    public function handle(CrawlDetail $crawlDetail, Closure $next): Closure
+    public function handle(CrawlDetail $crawlDetail, Closure $next)
     {
         $elements = $crawlDetail->document->find('//p | //span | //div//text()/..', Query::TYPE_XPATH);
 
@@ -20,7 +20,7 @@ class Words
             ->join(' ');
 
         $crawlDetail->word_count = Str::wordCount($fullText);
-
+        
         return $next($crawlDetail);
     }
 }
