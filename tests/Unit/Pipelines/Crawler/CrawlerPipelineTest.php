@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Pipelines\Crawler;
 
+use App\Enums\CrawlStatus;
+use App\Models\Crawl;
 use App\Models\CrawlPage;
 use App\Pipelines\Crawler\Pipes\ExternalLinks;
 use App\Pipelines\Crawler\Pipes\Images;
@@ -16,15 +18,22 @@ class CrawlerPipelineTest extends TestCase
 {
     use DatabaseMigrations;
 
+    protected Crawl $crawl;
     protected CrawlPage $detail;
 
     public function setUp(): void
     {
         parent::setUp();
 
+        $this->crawl = Crawl::create([
+            'url' => 'https://test_domain.com',
+            'pages' => 1,
+            'status' => CrawlStatus::RUNNING,
+        ]);
+
         $this->detail = new CrawlPage([
-            'crawl_id' => 1,
-            'url' => 'https://test_domain.com'
+            'crawl_id' => $this->crawl->id,
+            'url' => 'https://test_domain.com/page1.html'
         ]);
     }
 
