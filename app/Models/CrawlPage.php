@@ -16,7 +16,7 @@ class CrawlPage extends Model
     public Document $document;
     public array $internalLinks = [];
 
-    public function post(): BelongsTo
+    public function crawl(): BelongsTo
     {
         return $this->belongsTo(Crawl::class);
     }
