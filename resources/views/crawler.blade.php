@@ -17,7 +17,8 @@
                     @csrf
                     <div class="sm:shadow-md sm:overflow-hidden sm:rounded-md">
 
-                        <h2 class="sm:ml-3 sm:my-3 font-bold leading-4 text-gray-900 sm:truncate sm:text-sm sm:tracking-tight">
+                        <h2
+                                class="sm:ml-3 sm:my-3 font-bold leading-4 text-gray-900 sm:truncate sm:text-sm sm:tracking-tight">
                             Start Crawl
                         </h2>
 
@@ -36,7 +37,8 @@
                         <div class="space-y-6 bg-white py-5 sm:p-3">
                             <div>
                                 <label for="url"
-                                       class="block text-sm font-medium leading-6 text-gray-900">URL (including
+                                       class="block text-sm font-medium leading-6 text-gray-900">URL
+                                    (including
                                     protocol)</label>
                                 <div class="mt-2">
                                     <input type="text"
@@ -49,8 +51,8 @@
 
                                 @error('url')
                                 <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-                                    {{ $message }}
-                                </span>
+{{ $message }}
+</span>
                                 @enderror
                             </div>
 
@@ -71,8 +73,8 @@
 
                                 @error('pages')
                                 <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-        {{ $message }}
-    </span>
+{{ $message }}
+</span>
                                 @enderror
 
                             </div>
@@ -95,31 +97,40 @@
                     <table class="min-w-max leading-normal">
                         <thead>
                         <tr>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Created
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Pages
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Images
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Internal Links
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 External Links
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Page Load
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Word Count
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Title Length
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Status
                             </th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100">
@@ -129,7 +140,7 @@
                         </thead>
                         <tbody>
 
-                        @foreach($crawls as $crawl)
+                        @foreach ($crawls as $crawl)
                             <tr>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <div class="flex">
@@ -162,41 +173,45 @@
                                     <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->avg_title_length }}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <span @class([
-                                        'relative',
-                                        'inline-block',
-                                        'px-3',
-                                        'py-1',
-                                        'font-semibold',
-                                        'text-orange-900' => $crawl->status === CrawlStatus::RUNNING,
-                                        'text-green-900' => $crawl->status === CrawlStatus::COMPLETED,
-                                        'text-red-900' => $crawl->status === CrawlStatus::ERROR,
-                                        'leading-tight'
-                                    ])>
-                                        <span @class([
-                                            'absolute',
-                                            'inset-0',
-                                             'bg-orange-200' => $crawl->status === CrawlStatus::RUNNING,
-                                             'bg-green-200' => $crawl->status === CrawlStatus::COMPLETED,
-                                             'bg-red-200' => $crawl->status === CrawlStatus::ERROR,
-                                             'opacity-50',
-                                             'rounded-full'
-                                    ])></span>
+<span @class([
+'relative',
+'inline-block',
+'px-3',
+'py-1',
+'font-semibold',
+'text-orange-900' => $crawl->status === CrawlStatus::RUNNING,
+'text-green-900' => $crawl->status === CrawlStatus::COMPLETED,
+'text-red-900' => $crawl->status === CrawlStatus::ERROR,
+'leading-tight',
+])>
+<span @class([
+'absolute',
+'inset-0',
+'bg-orange-200' => $crawl->status === CrawlStatus::RUNNING,
+'bg-green-200' => $crawl->status === CrawlStatus::COMPLETED,
+'bg-red-200' => $crawl->status === CrawlStatus::ERROR,
+'opacity-50',
+'rounded-full',
+])></span>
 
-                                      <span class="relative">
-                                          {{ $crawl->status }}
-                                      </span>
-                                    </span>
+<span class="relative">
+{{ $crawl->status }}
+</span>
+</span>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
                                     @if ($crawl->details->count() > 0)
-                                        @include('partials.crawl_details_modal', ['crawl' => $crawl, 'modal_id' => 'modal_'.$crawl->id])
+                                        @include('partials.crawl_details_modal', [
+                                        'crawl' => $crawl,
+                                        'modal_id' => 'modal_' . $crawl->id,
+                                        ])
                                         <button type="button"
                                                 class="inline-block text-gray-500 hover:text-gray-700"
                                                 onclick="toggleModal('modal_{{ $crawl->id }}')">
                                             <svg class="inline-block h-6 w-6 fill-current"
                                                  viewBox="0 0 24 24">
-                                                <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z"/>
+                                                <path
+                                                        d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z"/>
                                             </svg>
                                         </button>
                                     @endif
@@ -252,7 +267,7 @@
                     </h2>
 
                     <dl>
-                        @foreach($mostRecentCrawl->details as $crawlPage)
+                        @foreach ($mostRecentCrawl->details as $crawlPage)
                             <div class="bg-gray-50 px-4 py-5">
                                 <dt class="text-sm font-medium text-gray-500">{{ $crawlPage->url }}</dt>
                                 <dd class="mt-1 text-sm text-gray-900">{{ $crawlPage->http_status }}</dd>
