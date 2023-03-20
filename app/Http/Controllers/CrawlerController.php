@@ -12,13 +12,9 @@ class CrawlerController extends Controller
 {
     public function index()
     {
-        try {
-            $recentCrawls = Crawl::with('details')
-                ->recent()
-                ->get();
-        } catch (Exception $e) {
-            Log::error(sprintf('Error while loading crawl data: %s', $e->getMessage()));
-        }
+        $recentCrawls = Crawl::with('pages')
+            ->recent()
+            ->get();
 
         return view('crawler', [
             'crawls' => $recentCrawls,
@@ -36,7 +32,7 @@ class CrawlerController extends Controller
                 '--pages' => $validated['pages']
             ]);
         } catch (Exception $e) {
-            Log::error(sprintf('Error while submitting crawl to %s: %s', $validated['url'], $e->getMessage()));
+            Log::error(sprintf('Error while initiating crawl to %s: %s', $validated['url'], $e->getMessage()));
 
             return redirect('/')
                 ->withErrors(['exception' => 'We\'re unable to crawl the site at this time. Please try again later.'])
