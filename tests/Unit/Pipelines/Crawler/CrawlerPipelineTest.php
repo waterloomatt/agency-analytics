@@ -27,8 +27,8 @@ class CrawlerPipelineTest extends TestCase
 
         $this->crawl = Crawl::create([
             'url' => 'https://test_domain.com',
-            'pages' => 1,
             'status' => CrawlStatus::RUNNING,
+            'page_count' => 1,
         ]);
 
         $this->detail = new CrawlPage([
