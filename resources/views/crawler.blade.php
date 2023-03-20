@@ -152,7 +152,7 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->pages }}</p>
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->page_count }}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ $crawl->unique_images }}</p>
@@ -197,7 +197,7 @@
                                         </span>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-                                    @if ($crawl->details->count() > 0)
+                                    @if ($crawl->pages()->count() > 0)
                                         @include('partials.crawl_details_modal', [
                                             'crawl' => $crawl,
                                             'modal_id' => 'modal_' . $crawl->id,
@@ -229,7 +229,7 @@
                         <dl>
                             <div class="bg-gray-50 px-4 py-5">
                                 <dt class="text-sm font-medium text-gray-500">Pages</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->pages }}</dd>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $mostRecentCrawl->page_count }}</dd>
                             </div>
                             <div class="bg-white px-4 py-5">
                                 <dt class="text-sm font-medium text-gray-500">Images</dt>
@@ -269,7 +269,7 @@
 
                     @if ($mostRecentCrawl)
                         <dl>
-                            @foreach ($mostRecentCrawl->details as $crawlPage)
+                            @foreach ($mostRecentCrawl->pages as $crawlPage)
                                 <div class="bg-gray-50 px-4 py-5">
                                     <dt class="text-sm font-medium text-gray-500">{{ $crawlPage->url }}</dt>
                                     <dd class="mt-1 text-sm text-gray-900">{{ $crawlPage->http_status }}</dd>

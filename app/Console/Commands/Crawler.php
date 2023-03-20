@@ -31,7 +31,7 @@ class Crawler extends Command
 
     protected Client $client;
 
-    protected Crawl $crawl;
+    protected ?Crawl $crawl = null;
 
     public function handle(Client $client): void
     {
@@ -40,7 +40,7 @@ class Crawler extends Command
             $this->crawl = Crawl::create([
                 'status' => CrawlStatus::RUNNING,
                 'url' => $this->option('url'),
-                'pages' => $this->option('pages'),
+                'page_count' => $this->option('pages'),
             ]);
 
             $this->info("Starting to crawl");
@@ -51,11 +51,11 @@ class Crawler extends Command
 
             $this->info("Finished crawling");
         } catch (ClientException $e) {
-            $this->summarize(CrawlStatus::ERROR);
             $this->logError("Error while retrieving {$this->crawl->url}", $e->getMessage());
-        } catch (Exception $e) {
             $this->summarize(CrawlStatus::ERROR);
+        } catch (Exception $e) {
             $this->logError("Error while crawling {$this->crawl->url}", $e->getMessage());
+            $this->summarize(CrawlStatus::ERROR);
         }
     }
 
@@ -103,7 +103,7 @@ class Crawler extends Command
             return false;
         }
 
-        if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->pages) {
+        if (!in_array($nextUrl, $this->visited) && count($this->visited) < $this->crawl->page_count) {
             return true;
         }
 
@@ -129,21 +129,21 @@ class Crawler extends Command
 
     protected function summarize(CrawlStatus $status): void
     {
-        $details = $this->crawl->details;
+        $pages = $this->crawl->pages;
 
         $summaryData = collect([
             'status' => $status,
-            'pages' => $details->count(),
+            'page_count' => $pages->count(),
         ]);
 
-        if ($details->count() > 0) {
+        if ($pages->count() > 0) {
             $summaryData = $summaryData->merge([
-                'unique_images' => $details->sum('unique_images'),
-                'unique_internal_links' => $details->sum('unique_internal_links'),
-                'unique_external_links' => $details->sum('unique_external_links'),
-                'avg_page_load' => $details->avg('page_load'),
-                'avg_word_count' => round($details->avg('word_count')),
-                'avg_title_length' => round($details->avg('title_length')),
+                'unique_images' => $pages->sum('unique_images'),
+                'unique_internal_links' => $pages->sum('unique_internal_links'),
+                'unique_external_links' => $pages->sum('unique_external_links'),
+                'avg_page_load' => $pages->avg('page_load'),
+                'avg_word_count' => round($pages->avg('word_count')),
+                'avg_title_length' => round($pages->avg('title_length')),
             ]);
         }
 

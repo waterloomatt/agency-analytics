@@ -18,7 +18,7 @@ class Crawl extends Model
         'status' => CrawlStatus::class,
     ];
 
-    public function details(): HasMany
+    public function pages(): HasMany
     {
         return $this->hasMany(CrawlPage::class);
     }
