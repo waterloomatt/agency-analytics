@@ -58,7 +58,7 @@ jobs:
         with:
           command: |
             cd agency-analytics/
-            php artisan migrate
+            php artisan migrate:fresh --seed --force
             php artisan config:clear
             php artisan view:clear
             php artisan route:cache
